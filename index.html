@@ -9,7 +9,7 @@
             margin: 0;
             height: 100vh;
             display: flex;
-            flex-direction: column; /* Stacks text on top of box */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #ffe6e6;
@@ -20,28 +20,28 @@
         h1 {
             color: #d32f2f;
             font-size: 3rem;
-            margin-bottom: 40px; /* Space between text and box */
+            margin-bottom: 30px;
             text-align: center;
         }
 
         /* The Arena Box */
         .game-box {
-            width: 600px; /* Made slightly wider */
-            height: 400px;
+            width: 700px; /* Made wider as requested */
+            height: 500px; /* Increased height slightly for room */
             background-color: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
             border: 4px solid #ffc1e3;
-            overflow: hidden; /* Keeps the button inside */
+            overflow: hidden;
         }
 
         button {
-            /* FIXED DIMENSIONS to prevent shape changing */
-            width: 100px;
-            height: 50px;
+            /* FIXED DIMENSIONS */
+            width: 120px;
+            height: 60px;
             
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
@@ -59,14 +59,14 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             
-            /* Center the Yes button horizontally at the bottom */
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
+            /* Initial Position: Center-Left */
+            top: 50%;
+            left: 35%; 
+            transform: translate(-50%, -50%);
         }
 
         #yesBtn:hover {
-            transform: translateX(-50%) scale(1.1);
+            transform: translate(-50%, -50%) scale(1.1);
             background-color: #45a049;
         }
 
@@ -75,10 +75,10 @@
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             
-            /* Start position */
-            top: 40px;
-            left: 50%;
-            transform: translateX(-50%); /* Keeps it centered initially */
+            /* Initial Position: Center-Right */
+            top: 50%;
+            left: 65%;
+            transform: translate(-50%, -50%);
             
             /* Fast movement */
             transition: top 0.1s ease, left 0.1s ease; 
@@ -100,14 +100,14 @@
         }
 
         #celebration img {
-            width: 250px;
+            width: 300px;
             border-radius: 15px;
             margin-top: 20px;
         }
         
         #celebration h2 {
             color: #d32f2f;
-            font-size: 2rem;
+            font-size: 2.5rem;
         }
     </style>
 </head>
@@ -117,7 +117,7 @@
 
     <div class="game-box" id="box">
         <button id="yesBtn" onclick="acceptProposal()">Yes</button>
-        <button id="noBtn" onmouseover="moveButton()">No</button>
+        <button id="noBtn" onmouseover="moveButton(event)">No</button>
 
         <div id="celebration">
             <h2>Yay! ❤️</h2>
@@ -131,23 +131,30 @@
         
         // Settings
         const padding = 20; 
-        const proximity = 300; // HUGE fear radius (pixels)
+        const proximity = 200; // Trigger distance
+
+        // Track mouse position globally so moveButton knows where NOT to go
+        let mouseX = 0;
+        let mouseY = 0;
 
         document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
             const btnRect = noBtn.getBoundingClientRect();
             const btnCenterX = btnRect.left + btnRect.width / 2;
             const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+            const distance = Math.hypot(mouseX - btnCenterX, mouseY - btnCenterY);
 
+            // If mouse is close, move the button
             if (distance < proximity) {
                 moveButton();
             }
         });
 
         function moveButton() {
-            // Remove the initial centering transform so it doesn't mess up positioning
-            noBtn.style.transform = 'none';
+            noBtn.style.transform = 'none'; // Reset transform to make math easier
 
             const boxRect = box.getBoundingClientRect();
             const btnRect = noBtn.getBoundingClientRect();
@@ -155,8 +162,23 @@
             const maxLeft = boxRect.width - btnRect.width - padding;
             const maxTop = boxRect.height - btnRect.height - padding;
 
-            const newLeft = Math.max(padding, Math.random() * maxLeft);
-            const newTop = Math.max(padding, Math.random() * maxTop);
+            let newLeft, newTop, distanceToMouse;
+            
+            // "Smart Evasion": Keep generating a new spot until it's far from the mouse
+            // We limit it to 20 tries to prevent freezing if the mouse is in a tricky spot
+            let safetyCounter = 0;
+            do {
+                newLeft = Math.max(padding, Math.random() * maxLeft);
+                newTop = Math.max(padding, Math.random() * maxTop);
+
+                // Calculate where this new spot is on the screen
+                const newScreenX = boxRect.left + newLeft + (btnRect.width/2);
+                const newScreenY = boxRect.top + newTop + (btnRect.height/2);
+
+                // Check distance from current mouse position
+                distanceToMouse = Math.hypot(mouseX - newScreenX, mouseY - newScreenY);
+                safetyCounter++;
+            } while (distanceToMouse < proximity + 50 && safetyCounter < 20);
 
             noBtn.style.left = newLeft + "px";
             noBtn.style.top = newTop + "px";
