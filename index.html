@@ -13,35 +13,41 @@
             align-items: center;
             background-color: #ffe6e6;
             font-family: 'Arial', sans-serif;
-            overflow: hidden; /* Important: prevents scrollbars if button moves to edge */
+            overflow: hidden;
         }
 
-        .container {
-            text-align: center;
+        .game-box {
+            width: 500px;
+            height: 400px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            border: 4px solid #ffc1e3;
         }
 
         h1 {
             color: #d32f2f;
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
+            font-size: 2.5rem;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            z-index: 2;
+            pointer-events: none;
         }
 
         button {
-            padding: 15px 30px;
+            padding: 12px 25px;
             font-size: 1.2rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
+            position: absolute;
         }
 
         #yesBtn {
@@ -49,11 +55,14 @@
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s;
-            z-index: 10; /* Keep Yes button on top */
+            bottom: 60px;
+            left: 30%;
+            transform: translateX(-50%);
+            z-index: 10;
         }
 
         #yesBtn:hover {
-            transform: scale(1.1);
+            transform: translateX(-50%) scale(1.1);
             background-color: #45a049;
         }
 
@@ -61,93 +70,89 @@
             background-color: #f44336;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            /* This transition makes the movement smooth */
-            transition: top 0.4s ease, left 0.4s ease; 
-            position: relative; 
+            bottom: 60px;
+            left: 70%;
+            transform: translateX(-50%);
+            z-index: 10;
+            
+            /* UPDATED: Much faster transition (0.1s instead of 0.3s) */
+            transition: top 0.1s ease, left 0.1s ease; 
         }
 
-        /* The hidden celebration section */
         #celebration {
             display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            z-index: 20;
+            z-index: 30;
         }
 
         #celebration img {
-            width: 300px;
+            width: 250px;
             border-radius: 15px;
             margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
-    <div class="container" id="question-container">
+    <div class="game-box" id="box">
         <h1>Will you be my Valentine?</h1>
-        <div class="buttons">
-            <button id="yesBtn" onclick="acceptProposal()">Yes</button>
-            <button id="noBtn">No</button>
-        </div>
-    </div>
+        
+        <button id="yesBtn" onclick="acceptProposal()">Yes</button>
+        <button id="noBtn" onmouseover="moveButton()">No</button>
 
-    <div id="celebration">
-        <h1>Yay! I knew you'd say yes! ❤️</h1>
-        <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Cute blushing bear">
+        <div id="celebration">
+            <h1>Yay! ❤️</h1>
+            <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Cute bear">
+        </div>
     </div>
 
     <script>
         const noBtn = document.getElementById('noBtn');
-        const yesBtn = document.getElementById('yesBtn');
+        const box = document.getElementById('box');
         
-        // This variable tracks if the button has started moving
-        let isMoving = false;
+        // UPDATED SETTINGS
+        const padding = 30; 
+        const proximity = 150; // Increased: It senses mouse from further away
 
         document.addEventListener('mousemove', (e) => {
-            // Get the current position of the No button
             const btnRect = noBtn.getBoundingClientRect();
-            const btnX = btnRect.left + btnRect.width / 2;
-            const btnY = btnRect.top + btnRect.height / 2;
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
 
-            // Calculate distance between mouse and button center
-            const distX = e.clientX - btnX;
-            const distY = e.clientY - btnY;
-            const distance = Math.sqrt(distX * distX + distY * distY);
+            const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
 
-            // If mouse is within 150 pixels of the button, move it!
-            if (distance < 150) {
+            // If mouse is close, move the button
+            if (distance < proximity) {
                 moveButton();
             }
         });
 
         function moveButton() {
-            // First time it moves, we switch to fixed positioning
-            if (!isMoving) {
-                noBtn.style.position = 'fixed';
-                isMoving = true;
-            }
+            const boxRect = box.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
 
-            // Get viewport dimensions
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const btnWidth = noBtn.offsetWidth;
-            const btnHeight = noBtn.offsetHeight;
+            const maxLeft = boxRect.width - btnRect.width - padding;
+            const maxTop = boxRect.height - btnRect.height - padding;
 
-            // Calculate new random position
-            // We use padding (50px) so it doesn't stick too close to the edge
-            const newX = Math.random() * (viewportWidth - btnWidth - 100) + 50;
-            const newY = Math.random() * (viewportHeight - btnHeight - 100) + 50;
+            const newLeft = Math.max(padding, Math.random() * maxLeft);
+            const newTop = Math.max(padding, Math.random() * maxTop);
 
-            // Apply new coordinates
-            noBtn.style.left = `${newX}px`;
-            noBtn.style.top = `${newY}px`;
+            noBtn.style.transform = "none"; 
+            noBtn.style.left = newLeft + "px";
+            noBtn.style.top = newTop + "px";
         }
 
         function acceptProposal() {
-            document.getElementById('question-container').style.display = 'none';
             document.getElementById('celebration').style.display = 'flex';
-            document.body.style.backgroundColor = "#ffc1e3";
         }
     </script>
 
