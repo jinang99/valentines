@@ -9,6 +9,7 @@
             margin: 0;
             height: 100vh;
             display: flex;
+            flex-direction: column; /* Stacks text on top of box */
             justify-content: center;
             align-items: center;
             background-color: #ffe6e6;
@@ -16,38 +17,40 @@
             overflow: hidden;
         }
 
+        h1 {
+            color: #d32f2f;
+            font-size: 3rem;
+            margin-bottom: 40px; /* Space between text and box */
+            text-align: center;
+        }
+
+        /* The Arena Box */
         .game-box {
-            width: 500px;
+            width: 600px; /* Made slightly wider */
             height: 400px;
             background-color: white;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            text-align: center;
             border: 4px solid #ffc1e3;
-        }
-
-        h1 {
-            color: #d32f2f;
-            font-size: 2.5rem;
-            margin-top: 30px;
-            margin-bottom: 10px;
-            z-index: 2;
-            pointer-events: none;
+            overflow: hidden; /* Keeps the button inside */
         }
 
         button {
-            padding: 12px 25px;
+            /* FIXED DIMENSIONS to prevent shape changing */
+            width: 100px;
+            height: 50px;
+            
             font-size: 1.2rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
             position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
         }
 
         #yesBtn {
@@ -55,10 +58,11 @@
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s;
-            bottom: 60px;
-            left: 30%;
+            
+            /* Center the Yes button horizontally at the bottom */
+            bottom: 40px;
+            left: 50%;
             transform: translateX(-50%);
-            z-index: 10;
         }
 
         #yesBtn:hover {
@@ -70,15 +74,17 @@
             background-color: #f44336;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            bottom: 60px;
-            left: 70%;
-            transform: translateX(-50%);
-            z-index: 10;
             
-            /* UPDATED: Much faster transition (0.1s instead of 0.3s) */
+            /* Start position */
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%); /* Keeps it centered initially */
+            
+            /* Fast movement */
             transition: top 0.1s ease, left 0.1s ease; 
         }
 
+        /* Celebration Overlay */
         #celebration {
             display: none;
             position: absolute;
@@ -87,11 +93,10 @@
             width: 100%;
             height: 100%;
             background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 30;
+            z-index: 20;
         }
 
         #celebration img {
@@ -99,18 +104,23 @@
             border-radius: 15px;
             margin-top: 20px;
         }
+        
+        #celebration h2 {
+            color: #d32f2f;
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
 
+    <h1>Will you be my Valentine?</h1>
+
     <div class="game-box" id="box">
-        <h1>Will you be my Valentine?</h1>
-        
         <button id="yesBtn" onclick="acceptProposal()">Yes</button>
         <button id="noBtn" onmouseover="moveButton()">No</button>
 
         <div id="celebration">
-            <h1>Yay! ❤️</h1>
+            <h2>Yay! ❤️</h2>
             <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Cute bear">
         </div>
     </div>
@@ -119,9 +129,9 @@
         const noBtn = document.getElementById('noBtn');
         const box = document.getElementById('box');
         
-        // UPDATED SETTINGS
-        const padding = 30; 
-        const proximity = 150; // Increased: It senses mouse from further away
+        // Settings
+        const padding = 20; 
+        const proximity = 300; // HUGE fear radius (pixels)
 
         document.addEventListener('mousemove', (e) => {
             const btnRect = noBtn.getBoundingClientRect();
@@ -130,13 +140,15 @@
 
             const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
 
-            // If mouse is close, move the button
             if (distance < proximity) {
                 moveButton();
             }
         });
 
         function moveButton() {
+            // Remove the initial centering transform so it doesn't mess up positioning
+            noBtn.style.transform = 'none';
+
             const boxRect = box.getBoundingClientRect();
             const btnRect = noBtn.getBoundingClientRect();
 
@@ -146,13 +158,14 @@
             const newLeft = Math.max(padding, Math.random() * maxLeft);
             const newTop = Math.max(padding, Math.random() * maxTop);
 
-            noBtn.style.transform = "none"; 
             noBtn.style.left = newLeft + "px";
             noBtn.style.top = newTop + "px";
         }
 
         function acceptProposal() {
             document.getElementById('celebration').style.display = 'flex';
+            document.getElementById('yesBtn').style.display = 'none';
+            document.getElementById('noBtn').style.display = 'none';
         }
     </script>
 
