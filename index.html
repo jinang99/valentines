@@ -105,3 +105,51 @@
         let isMoving = false;
 
         document.addEventListener('mousemove', (e) => {
+            // Get the current position of the No button
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnX = btnRect.left + btnRect.width / 2;
+            const btnY = btnRect.top + btnRect.height / 2;
+
+            // Calculate distance between mouse and button center
+            const distX = e.clientX - btnX;
+            const distY = e.clientY - btnY;
+            const distance = Math.sqrt(distX * distX + distY * distY);
+
+            // If mouse is within 150 pixels of the button, move it!
+            if (distance < 150) {
+                moveButton();
+            }
+        });
+
+        function moveButton() {
+            // First time it moves, we switch to fixed positioning
+            if (!isMoving) {
+                noBtn.style.position = 'fixed';
+                isMoving = true;
+            }
+
+            // Get viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            // Calculate new random position
+            // We use padding (50px) so it doesn't stick too close to the edge
+            const newX = Math.random() * (viewportWidth - btnWidth - 100) + 50;
+            const newY = Math.random() * (viewportHeight - btnHeight - 100) + 50;
+
+            // Apply new coordinates
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        function acceptProposal() {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('celebration').style.display = 'flex';
+            document.body.style.backgroundColor = "#ffc1e3";
+        }
+    </script>
+
+</body>
+</html>
