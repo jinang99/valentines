@@ -11,14 +11,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ffe6e6; /* Cute light pink background */
+            background-color: #ffe6e6;
             font-family: 'Arial', sans-serif;
-            overflow: hidden; /* Prevents scrollbars when button moves */
+            overflow: hidden; /* Important: prevents scrollbars if button moves to edge */
         }
 
         .container {
             text-align: center;
             position: relative;
+            z-index: 1;
         }
 
         h1 {
@@ -40,13 +41,15 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s;
+            font-weight: bold;
         }
 
         #yesBtn {
             background-color: #4CAF50;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            z-index: 10; /* Keep Yes button on top */
         }
 
         #yesBtn:hover {
@@ -58,14 +61,17 @@
             background-color: #f44336;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative; /* Allows us to move it around */
+            /* This transition makes the movement smooth */
+            transition: top 0.4s ease, left 0.4s ease; 
+            position: relative; 
         }
 
         /* The hidden celebration section */
         #celebration {
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             align-items: center;
+            z-index: 20;
         }
 
         #celebration img {
@@ -82,7 +88,7 @@
         <h1>Will you be my Valentine?</h1>
         <div class="buttons">
             <button id="yesBtn" onclick="acceptProposal()">Yes</button>
-            <button id="noBtn" onmouseover="moveButton()" onclick="moveButton()">No</button>
+            <button id="noBtn">No</button>
         </div>
     </div>
 
@@ -92,31 +98,10 @@
     </div>
 
     <script>
-        function moveButton() {
-            const noBtn = document.getElementById('noBtn');
-            
-            // Calculate random positions within the window
-            // We subtract the button size (approx 100px) to keep it onscreen
-            const x = Math.random() * (window.innerWidth - 100);
-            const y = Math.random() * (window.innerHeight - 50);
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        
+        // This variable tracks if the button has started moving
+        let isMoving = false;
 
-            noBtn.style.position = 'absolute';
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
-        }
-
-        function acceptProposal() {
-            // Hide the question
-            document.getElementById('question-container').style.display = 'none';
-            
-            // Show the celebration
-            const celebration = document.getElementById('celebration');
-            celebration.style.display = 'flex';
-            
-            // Optional: Add confetti or background change here
-            document.body.style.backgroundColor = "#ffc1e3"; // Darker pink
-        }
-    </script>
-
-</body>
-</html>
+        document.addEventListener('mousemove', (e) => {
